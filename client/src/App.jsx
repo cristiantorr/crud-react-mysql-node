@@ -48,12 +48,6 @@ function App() {
   const cancel = () => {
     clearForm();
     setInfoEmployees(false);
-    MySwal.fire({
-      title: "Error!",
-      text: "Do you want to continue",
-      icon: "error",
-      confirmButtonText: "Cool",
-    });
   };
 
   // Se hizo la consulta con fetch.
@@ -88,7 +82,24 @@ function App() {
     })
       .then((res) => {
         console.log(res);
+        const Toast = MySwal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: false,
+
+          didOpen: (toast) => {
+            toast.onmouseenter = MySwal.stopTimer;
+            toast.onmouseleave = MySwal.resumeTimer;
+          },
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Empleado(a) creado correctamente",
+        });
         updateEmployeeList();
+        clearForm();
       })
       .catch((err) => {
         console.log(err);
@@ -107,7 +118,22 @@ function App() {
       Experience: experience,
     })
       .then((res) => {
-        alert("Empleado actualizado correctamente");
+        const Toast = MySwal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 2000,
+          timerProgressBar: false,
+
+          didOpen: (toast) => {
+            toast.onmouseenter = MySwal.stopTimer;
+            toast.onmouseleave = MySwal.resumeTimer;
+          },
+        });
+        Toast.fire({
+          icon: "success",
+          title: "Empleado(a) actualizado correctamente",
+        });
         updateEmployeeList();
       })
       .catch((err) => {
@@ -116,23 +142,38 @@ function App() {
   };
 
   const remove = (id) => {
-    const confirm = window.confirm("¿Estás seguro de eliminar este empleado?");
-    if (confirm) {
-      setRemoveEMployees(true);
+    Swal.fire({
+      title: "¿Estas seguro?",
+      text: "¡No podrás revertir esto!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "¡Sí, bórralo!",
+    }).then((result) => {
+      /* Read more about isConfirmed, isDenied below */
+      if (result.isConfirmed) {
+        setRemoveEMployees(true);
 
-      Axios.delete(`http://localhost:3001/delete/${id}`, {
-        id: id,
-      })
-        .then((res) => {
-          alert("Empleado eliminado correctamente");
-          updateEmployeeList();
+        Axios.delete(`http://localhost:3001/delete/${id}`, {
+          id: id,
         })
-        .catch((err) => {
-          console.log(err);
+          .then((res) => {
+            updateEmployeeList();
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        Swal.fire({
+          title: "Eliminado(a)",
+          text: "Empleado(a) eliminado correctamente",
+          icon: "success",
         });
-    } else {
-      setRemoveEMployees(false);
-    }
+      } else if (result.isDenied) {
+        setRemoveEMployees(false);
+        MySwal.fire("Los cambios no se han guardado", "", "info");
+      }
+    });
   };
 
   // Se hace consulta con axios, para listar empleados
@@ -140,7 +181,6 @@ function App() {
     Axios.get("http://localhost:3001/empleados")
       .then((res) => {
         setListEmpoyees(res.data);
-        console.log(res.data);
       })
       .catch((err) => {
         console.log(err);
