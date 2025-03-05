@@ -1,0 +1,52 @@
+services:
+  frontend:
+    build:
+      context: ./client # Ruta para la carpeta 'cliente'
+      dockerfile: Dockerfile # Dockerfile para el frontend
+    ports:
+      - "80:80"
+    networks:
+      - mynetwork
+
+  backend:
+    build:
+      context: ./server # Ruta para la carpeta 'server'
+      dockerfile: Dockerfile # Dockerfile para el backend
+    ports:
+      - ":8081" # El puerto que expone el backend
+    networks:
+      - mynetwork
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    ports:
+      - "3306:3306" # Puerto en el que corre MySQL
+    volumes:
+      - mysql-data:/var/lib/mysql # Volumen persistente para los datos
+
+  #contrase y usuario  MYSQL_DATABASE: mydatabase        MYSQL_USER: user
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql # Nombre del servicio MySQL
+      PMA_PORT: 3306
+    ports:
+      - "8082:80" # Acceso a phpMyAdmin en el puerto 8081
+    depends_on:
+      - mysql # phpMyAdmin depende de que MySQL esté disponible
+
+networks:
+  mynetwork:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
