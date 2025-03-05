@@ -123,7 +123,7 @@ app.get("/empleados", (req, res) => {
       console.error("Error al consultar la base de datos", err);
       return res
         .status(500)
-        .json({ error: "Error al consultar la base de datos" });
+        .json({ error: "Error al consultar la base de datos", err });
     } else {
       console.log("Consulta exitosa");
       res.status(200).json(results);

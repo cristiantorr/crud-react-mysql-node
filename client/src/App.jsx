@@ -20,10 +20,10 @@ function App() {
   const [listEmployees, setListEmpoyees] = useState([]);
   const [infoEmployees, setInfoEmployees] = useState(false);
   const [removeEmployees, setRemoveEMployees] = useState(false);
-  const [cancelEmployees, setCancelEMployees] = useState(false);
   const MySwal = withReactContent(Swal);
 
   const [idEmployee, setIdEmployee] = useState(0);
+  const [hasFetched, setHasFetched] = useState(false); // Estado que controla si ya se hizo la consulta
 
   // Se obtiene información del empleado para editarlo en el formulario
   const info = (data) => {
@@ -102,7 +102,26 @@ function App() {
         clearForm();
       })
       .catch((err) => {
-        console.log(err);
+        MySwal.fire({
+          icon: "error",
+          title: "Oops..",
+          text: "No se logró crear el empleado",
+          confirmButtonColor: "#198754",
+          footer: "Lo sentimos, intente más tarde",
+        });
+        /*  if (err.response) {
+          // El servidor respondió con un código de estado fuera del rango 2xx
+          console.error("Error en el servidor:", err.response.status);
+          console.error("Mensaje de error del servidor:", err.response.data);
+        } else if (err.request) {
+          // La solicitud fue hecha, pero no se recibió respuesta (error de conexión o timeout)
+          console.error(
+            "Error de conexión o timeout. No se recibió respuesta del servidor"
+          );
+        } else {
+          // Algo sucedió al configurar la solicitud
+          console.error("Error al configurar la solicitud:", err.message);
+        } */
       });
   };
 
@@ -137,7 +156,13 @@ function App() {
         updateEmployeeList();
       })
       .catch((err) => {
-        console.log(err);
+        MySwal.fire({
+          icon: "error",
+          title: "Oops..",
+          text: "No se logró actualizar el empleado",
+          confirmButtonColor: "#198754",
+          footer: "Lo sentimos, intente más tarde",
+        });
       });
   };
 
@@ -147,7 +172,7 @@ function App() {
       text: "¡No podrás revertir esto!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
+      confirmButtonColor: "#198754",
       cancelButtonColor: "#d33",
       confirmButtonText: "¡Sí, bórralo!",
     }).then((result) => {
@@ -160,15 +185,21 @@ function App() {
         })
           .then((res) => {
             updateEmployeeList();
+            Swal.fire({
+              title: "Eliminado(a)",
+              text: "Empleado(a) eliminado correctamente",
+              icon: "success",
+            });
           })
           .catch((err) => {
-            console.log(err);
+            MySwal.fire({
+              icon: "error",
+              title: "Oops..",
+              text: "No se logró eliminar el empleado",
+              confirmButtonColor: "#198754",
+              footer: "Lo sentimos, intente más tarde",
+            });
           });
-        Swal.fire({
-          title: "Eliminado(a)",
-          text: "Empleado(a) eliminado correctamente",
-          icon: "success",
-        });
       } else if (result.isDenied) {
         setRemoveEMployees(false);
         MySwal.fire("Los cambios no se han guardado", "", "info");
@@ -303,35 +334,54 @@ function App() {
                         : key}
                     </th>
                   ))}
-                  <th>Acciones</th>
+                  {listEmployees && listEmployees.length > 0 ? (
+                    <th>Acciones</th>
+                  ) : null}
                 </tr>
               </thead>
               <tbody>
-                {listEmployees.map((employee, index) => (
-                  <tr key={index}>
-                    <td>{employee.Username}</td>
-                    <td>{employee.Age}</td>
-                    <td>{employee.Country}</td>
-                    <td>{employee.Position}</td>
-                    <td>{employee.Experience}</td>
-                    <td>
-                      <div className="d-flex gap-2 mb-2">
-                        <Button
-                          variant="outline-info"
-                          onClick={() => info(employee)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          onClick={() => remove(employee.id)}
-                        >
-                          Eliminar
-                        </Button>
+                {listEmployees && listEmployees.length > 0 ? (
+                  listEmployees.map(
+                    (
+                      employee,
+                      index // <-- listaEmployees
+                    ) => (
+                      <tr key={index}>
+                        <td>{employee.Username}</td>
+                        <td>{employee.Age}</td>
+                        <td>{employee.Country}</td>
+                        <td>{employee.Position}</td>
+                        <td>{employee.Experience}</td>
+                        <td>
+                          <div className="d-flex gap-2 mb-2">
+                            <Button
+                              variant="outline-info"
+                              onClick={() => info(employee)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="outline-danger"
+                              onClick={() => remove(employee.id)}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  )
+                ) : (
+                  <tr>
+                    <td colSpan={5}>
+                      <div className="d-flex justify-content-center">
+                        <h1 className="text-center">
+                          No se encontraron empleados
+                        </h1>
                       </div>
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </Table>
           </section>
