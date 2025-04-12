@@ -3,6 +3,8 @@ const mysql = require("mysql2");
 
 const app = express();
 const port = 3001;
+
+// SE UTILIZA CORS PARA PERMITIR QUE EL FRONTEND PUEDA USAR LA API
 const cors = require("cors");
 console.log(`Servidor corriendosdas`);
 // Middleware de CORS dinámico
